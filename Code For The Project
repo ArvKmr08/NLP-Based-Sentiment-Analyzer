@@ -24,3 +24,29 @@ def remove_punctuation(text):
     text = re.sub(r"[^A-Za-z0-9\s]", "", text)
     return text
 df["review"] = df["review"].apply(remove_punctuation)        # Removing Punctuation from the text
+
+# Label Encoding 
+
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df["sentiment"] = le.fit_transform(df["sentiment"])
+
+# Vectorization of the Data
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+tf = TfidfVectorizer(max_features = 500)
+
+# Defining Labels and Targets
+
+X = tf.fit_transform(df["review"])
+y = df["sentiment"]
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42)
+X_train.shape
+
+import torch
+from torch.utils.data import TensorDataset, DataLoader      # Converting data into Tensors and Loaders
+
+X_train = X_train.toarray()
+X_test = X_test.toarray()
