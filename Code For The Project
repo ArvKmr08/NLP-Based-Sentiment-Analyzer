@@ -50,3 +50,15 @@ from torch.utils.data import TensorDataset, DataLoader      # Converting data in
 
 X_train = X_train.toarray()
 X_test = X_test.toarray()
+
+# Converting to Tensors
+
+train_set = TensorDataset(
+    torch.from_numpy(X_train).float(),
+    torch.from_numpy(y_train.values).float()
+)
+
+test_set = TensorDataset(
+    torch.from_numpy(X_test).float(),
+    torch.from_numpy(y_test.values).float()
+)
