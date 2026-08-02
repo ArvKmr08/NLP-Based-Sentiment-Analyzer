@@ -69,3 +69,82 @@ train_loader = DataLoader(train_set, shuffle = True,
                          batch_size = 64)
 test_loader = DataLoader(test_set, shuffle = True,
                         batch_size = 64)
+
+import torch.nn as nn
+import torch.optim as optimizer    # Importing Torch
+
+# Defining out RNN
+
+class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size=128, num_layers=1):
+        super().__init__()
+
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+
+        self.rnn = nn.RNN(
+            input_size,
+            hidden_size,
+            num_layers,
+            batch_first=True
+        )
+
+        self.fc = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        h0 = torch.zeros(
+            self.num_layers,
+            x.size(0),
+            self.hidden_size
+        )
+
+        out, _ = self.rnn(x, h0)
+
+        out = self.fc(out[:, -1, :])
+
+        return out
+
+
+# Training our RNN
+
+input_size = X_train.shape[1]
+model = RNN(input_size)
+criterion = nn.BCELoss()
+optimizer = optimizer.Adam(model.parameters())
+
+for epoch in range(epochs):
+    model.train()
+
+    for Xb, yb in train_loader:
+        optimizer.zero_grad()
+
+        Xb = Xb.unsqueeze(1) # add singleton direction
+        
+        outputs = model(Xb) # (batch_size, 1)
+
+        outputs = torch.sigmoid(outputs.squeeze()) # (batch_size,) => probability
+
+        loss = criterion(outputs, yb) # compute loss
+        loss.backward() # backprop
+        optimizer.step() # weights update
+
+    print(f"epoch = {epoch+1}/{epochs} and loss = {loss.item()}")
+
+# EValuating our Model
+
+model.eval()
+
+with torch.no_grad():
+    correct_vals = 0
+    tot_vals = 0
+    
+    for Xb, yb in test_loader:
+        Xb = Xb.unsqueeze(1)
+
+        outputs = model(Xb)
+        predicted = (torch.sigmoid(outputs.squeeze()) > 0.5).float()
+
+        tot_vals += yb.size(0)
+        correct_vals += (predicted == yb).sum().item()
+
+    print(f"accuracy = {correct_vals/tot_vals*100}")
