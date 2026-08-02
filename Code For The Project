@@ -62,3 +62,10 @@ test_set = TensorDataset(
     torch.from_numpy(X_test).float(),
     torch.from_numpy(y_test.values).float()
 )
+
+# Converting into Loader
+
+train_loader = DataLoader(train_set, shuffle = True,
+                         batch_size = 64)
+test_loader = DataLoader(test_set, shuffle = True,
+                        batch_size = 64)
